@@ -1,17 +1,16 @@
-﻿
-    //❤❤❤❤❤❤❤❤♡♡♡♡♡♡♡♥♥♥♥
-    string name_user;
-    int energy;
-    int  energy_monster, skill_monster;
-    int stage = 1, final_stage = 11;
-    int random_luck_atk, random_luck_def;
-    int total_energy;
-    int damage = 0;
-    string luck_you_atk = "", luck_you_def = "";
-    string name_monster;
-    string response = "";
-    var result = (name_monster = "", skill_monster = 0, energy_monster = 0);
+﻿//By NicholasDev
+    string name_user; //Nome do player
+    int energy_monster, skill_monster; //Status do monstro
+    int stage = 1, final_stage = 11; //Estágio
+    int damage = 0, takenDamage = 0; //Dano
+    int luck, skill, energy; //hero stats
+    string name_monster; //Nome do monstro
+    string luck_state = ""; //Quantidade da sorte
+    string response = ""; //Tentar a sorte ou não
+    var result = (name_monster = "", skill_monster = 0, energy_monster = 0); //Vetor do status do monstro
+    int luck_test;//Teste de sorte
 
+    Skills();
     First();
 
     void text(string write) {
@@ -20,9 +19,12 @@
         {
             Console.Write(write[i]); 
         }
+        
     }
 
     void First (){
+
+        Console.ForegroundColor = ConsoleColor.White;
 
         text("Sejá Bem-Vindo a Masmorra");
 
@@ -30,21 +32,9 @@
 
         Console.WriteLine("Escreva seu nome: ");
         name_user = Console.ReadLine()!;
-
-        if (name_user != "")
-        {
-            Console.WriteLine($"{result}");
-        }
-
-      
-    }
-
-    void Action (){
-
-        Console.WriteLine("[A] Para atacar [D] para defender");
-        Console.WriteLine("Você deseja tentar a sorte?");
-        response = Console.ReadLine()!;
-
+        Loader();
+        Console.Clear();
+        RafflingLuck();
     }
 
     void Loader () {
@@ -101,99 +91,189 @@
 
     void Skills () {
        Random rdskill = new Random();
-       int skill = rdskill.Next(1, 6)+6;
+       skill = rdskill.Next(1, 7)+6;
 
        Random rdluck = new Random();
-       int luck = rdluck.Next(1, 6)+12 + rdluck.Next(1, 6)+12;
+       luck = rdluck.Next(1, 7)+rdluck.Next(1, 7)+12;
 
        Random rdenergy = new Random();
-       int energy = rdenergy.Next(1, 6)+6;
+       energy = rdenergy.Next(1, 7)+6;
     }
 
-
-    void RafflingLuck(int luck) {
+    // Quando o player esta em combate
+    void combat()
+    {   
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine("Você deseja [A]tacar ou [D]efender?");
+        response = Console.ReadLine()!.ToUpper();
 
         if (response == "A") 
         {
-            Random tryluck_atk = new Random();
-            random_luck_atk = tryluck_atk.Next(2, 6);
-            
+            Random tryAtk = new Random();
+            int hero_attack_test = tryAtk.Next(1,7) + tryAtk.Next(1,7)+skill;
+            int monster_attack_test = tryAtk.Next(1,7) + tryAtk.Next(1,7)+skill_monster;
+            Damage();
+            if (hero_attack_test > monster_attack_test)
+            {
+                energy_monster = energy_monster - damage;
+                text($"{name_monster} perdeu {damage} HP.\n");
+            }
+            else if (hero_attack_test < monster_attack_test)
+            {
+                energy = energy - takenDamage;
+                text($"{name_user} perdeu {takenDamage} HP.\n");
+            }
+            else
+            {
+                text("Ambos erram.\n");
+            }
+            luck_state = "";
+            Thread.Sleep(360);
         }
-        else if (random_luck_atk <= luck)
+        else if (response == "D") 
         {
-            string luck_you_atk = "Sortudo";
-            Console.ForegroundColor = ConsoleColor.DarkRed;
-            text("Sortudo");
-            Console.ResetColor();
+            Random tryAtk = new Random();
+            int hero_attack_test = tryAtk.Next(1,7) + tryAtk.Next(1,7)+skill;
+            int monster_attack_test = tryAtk.Next(1,7) + tryAtk.Next(1,7)+skill_monster;
+            Damage();
+            if (hero_attack_test < monster_attack_test)
+            {
+                energy = energy - takenDamage-1;
+                text($"{name_user} perdeu {takenDamage-1} HP, bloqueiou.\n");
+            }
+            else if (hero_attack_test > monster_attack_test)
+            {
+                energy_monster = energy_monster - damage-1;
+                text($"{name_monster} perdeu {damage-1} HP, contra-ataca.\n");
+            }
+            else
+            {
+                text("Ambos erram.\n");
+            }
+            luck_state = "";
+            Thread.Sleep(360);
         }
-        else 
+        else
         {
-            string luck_you_atk = "Azarado";
-            Console.ForegroundColor = ConsoleColor.Red;
-            text("Azarado");
-            Console.ResetColor();
+            RafflingLuck();
         }
+    Turn();
+   }
 
-        // --- Caso o usuário escolha diminuir o dano recebido ---
+    void RafflingLuck() {
+        Console.Clear();
+        StatsMonster();
 
-        if (response == "D") 
+        Console.WriteLine();
+
+        StatsPlayer();
+        if (luck_state == "")
         {
-            Random tryluck_def = new Random();
-            random_luck_def = tryluck_def.Next(2, 6);
-            
-        }
-        else if (random_luck_atk <= luck)
+        Console.ForegroundColor = ConsoleColor.White;
+        Console.WriteLine("Você deseja tentar a sorte?");
+        response = Console.ReadLine()!.ToUpper();
+        if (response == "S") 
         {
-            string luck_you_def = "Sortudo";
-            Console.ForegroundColor = ConsoleColor.DarkRed;
-            text("Sortudo");
-            Console.ResetColor();
-        }
-        else 
-        {
-            string luck_you_def = "Azarado";
+            Random tryluck = new Random();
+            luck_test = tryluck.Next(1,7) + tryluck.Next(1,7);
+            if (luck_test <= luck)
+            {
+            luck_state = "Sortudo";
+            Console.ForegroundColor = ConsoleColor.Green;
+            text("Sortudo\n");
+            }
+            else 
+            {
+            luck_state = "Azarado";
             Console.ForegroundColor = ConsoleColor.Red;
-            text("Azarado");
+            text("Azarado\n");
+            }
+            luck = luck - 1;
             Console.ResetColor();
+            combat();
+        }
+        else
+        {
+            combat();
+        }
+        }
+        else
+        {
+            combat();
         }
     }
 
-    void Damage(string luck_you_atk, string luck_you_def)
+    void Damage()
     {
-        if(luck_you_atk == "Sortudo") 
+        if(luck_state == "Sortudo") 
         {
             damage = 4;
-            total_energy = energy - 2;
+            takenDamage = 1;
         }
-        else if (luck_you_atk == "Azarado")
+        else if (luck_state == "Azarado")
         {
             damage = 1;
-            total_energy = energy - 2;
+            takenDamage = 3;
         }
-
-        // Caso o usuário tenha tentado defender
-        if (luck_you_def == "Sortudo")
+        else
         {
             damage = 2;
-            total_energy = energy - 1;
-          
-        }
-
-        else if (luck_you_def == "Azarado")
-        {
-            damage = 2;
-            total_energy = energy - 3;
-           
+            takenDamage = 2;
         }
     }
     
+
+    // Loop para o jogo continuar
     void Turn (){
-        if (energy_monster <= 0)
+        if (energy_monster <= 0 && stage < final_stage && energy > 0)
         {
-            stage ++;
+            stage++;
+            Loader();
+            RafflingLuck();
+        
+        }
+        else if (stage == final_stage && energy_monster <= 0 && energy > 0)
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("Você Venceu");
+        }
+        else if (energy <= 0)
+        {
+            Console.WriteLine("Game Over");
+        }
+        else{
+            RafflingLuck();
         }
     }
 
-    void StatsPlayer (int skill, int luck, int energy) {
-        Console.WriteLine($"Energia{energy} Habilidade {skill} Sorte {luck}");
+
+    void StatsPlayer () {
+        Console.ForegroundColor = ConsoleColor.DarkBlue;
+        Console.Write($"Nome: {name_user} ");
+
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.Write($"HP: {energy} ");
+
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.Write($"Habilidade: {skill} ");
+
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine($"Sorte: {luck}");
+        Console.ResetColor();
     }
+    void StatsMonster (){
+
+        Console.ForegroundColor = ConsoleColor.DarkBlue;
+        Console.Write($"Monstro: {result.Item1} ");
+
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.Write($"HP: {energy_monster}/{result.Item3} ");
+
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine($"Habilidade: {skill_monster} ");
+
+        Console.ResetColor();
+
+    }
+
+    Console.ResetColor();
